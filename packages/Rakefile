@@ -15,7 +15,7 @@ steps << Evoker::cached_wget(
 steps << file("mk-livestatus--src/src/livestatus.o") do
   rm_rf "mk-livestatus-#{MK_LIVESTATUS_VERSION}"
   rm_f "mk-livestatus--src"
-  sh "tar -xzf #{tarball}"
+  sh "tar -xzf mk-livestatus-#{MK_LIVESTATUS_VERSION}.tar.gz"
   ln_s "mk-livestatus-#{MK_LIVESTATUS_VERSION}", "mk-livestatus--src"
 
   chdir "mk-livestatus--src" do
