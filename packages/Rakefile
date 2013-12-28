@@ -18,7 +18,7 @@ steps << file("mk-livestatus--src/src/livestatus.o") do
   sh "tar -xzf #{tarball}"
   ln_s "mk-livestatus-#{MK_LIVESTATUS_VERSION}", "mk-livestatus--src"
 
-  chdir "mk-livestatus-src" do
+  chdir "mk-livestatus--src" do
     sh "./configure --prefix=/usr"
     sh "make"
   end
