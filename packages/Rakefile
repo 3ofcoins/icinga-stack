@@ -9,7 +9,7 @@ require 'rake/clean'
 tarball = Evoker::cached_wget(
   "http://www.mathias-kettner.de/download/mk-livestatus-#{MK_LIVESTATUS_VERSION}.tar.gz",
   :checksum => 'edceb13675ed3375fd867216e2ffe31c350d5860509f9fb0abd182148e270616')
-CLEAN << tarball
+CLEAN << 'mk-livestatus-*'
 
 built = file "mk-livestatus--src/src/livestatus.o" => tarball do
   rm_rf "mk-livestatus-#{MK_LIVESTATUS_VERSION}", "mk-livestatus--src"
@@ -20,8 +20,6 @@ built = file "mk-livestatus--src/src/livestatus.o" => tarball do
     sh "make"
   end
 end
-CLEAN << SRCDIR
-CLEAN << "mk-livestatus--src"
 
 installed = file "mk-livestatus--destroot/usr/lib/mk-livestatus/livestatus.o" => built do
   root = File.expand_path("mk-livestatus--destroot")
@@ -30,7 +28,6 @@ installed = file "mk-livestatus--destroot/usr/lib/mk-livestatus/livestatus.o" =>
     sh "make install DESTDIR=#{root}"
   end
 end
-CLEAN << "mk-livestatus--destroot"
 
 desc "Build the package"
 deb = file "mk-livestatus--#{MK_LIVESTATUS_VERSION}_amd64.deb" => installed do
