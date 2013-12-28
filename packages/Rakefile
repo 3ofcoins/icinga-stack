@@ -6,12 +6,13 @@ require 'evoker'
 require 'evoker/local_cache'
 require 'rake/clean'
 
-tarball = Evoker::cached_wget(
+steps = []
+
+steps << Evoker::cached_wget(
   "http://www.mathias-kettner.de/download/mk-livestatus-#{MK_LIVESTATUS_VERSION}.tar.gz",
   :checksum => 'edceb13675ed3375fd867216e2ffe31c350d5860509f9fb0abd182148e270616')
-CLEAN << 'mk-livestatus-*'
 
-built = file "mk-livestatus--src/src/livestatus.o" => tarball do
+steps << file("mk-livestatus--src/src/livestatus.o") do
   rm_rf "mk-livestatus-#{MK_LIVESTATUS_VERSION}"
   rm_f "mk-livestatus--src"
   sh "tar -xzf #{tarball}"
@@ -23,7 +24,7 @@ built = file "mk-livestatus--src/src/livestatus.o" => tarball do
   end
 end
 
-installed = file "mk-livestatus--destroot/usr/lib/mk-livestatus/livestatus.o" => built do
+steps <<  file("mk-livestatus--destroot/usr/lib/mk-livestatus/livestatus.o") do
   root = File.expand_path("mk-livestatus--destroot")
   rm_rf root
   chdir "mk-livestatus-#{MK_LIVESTATUS_VERSION}" do
@@ -32,9 +33,14 @@ installed = file "mk-livestatus--destroot/usr/lib/mk-livestatus/livestatus.o" =>
 end
 
 desc "Build the package"
-deb = file "mk-livestatus--#{MK_LIVESTATUS_VERSION}_amd64.deb" => installed do
+steps << file("mk-livestatus_#{MK_LIVESTATUS_VERSION}_amd64.deb") do
   sh "fpm -s dir -t deb -n mk-livestatus -v #{MK_LIVESTATUS_VERSION} -a amd64 -C mk-livestatus--destroot ."
 end
 
-CLOBBER << deb
-task :default => deb
+steps.each_cons(2) do |preceding_step, following_step|
+  following_step.enhance([preceding_step])
+end
+
+CLEAN << 'mk-livestatus-*'
+CLOBBER << steps.last
+task :default => steps.last
